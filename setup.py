@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
-
+from pyplagiarism.version import __version__
 
 def readme():
     with open('README.rst') as f:
@@ -8,7 +8,6 @@ def readme():
 
 __name__ = "pyplagiarism"
 __author__ = "Julian Blank"
-__version__ = '0.1.0'
 __url__ = "https://github.com/julesy89/pyplagiarism"
 
 setup(

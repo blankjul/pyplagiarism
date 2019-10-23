@@ -15,7 +15,7 @@ class Comparator:
 class PycodeComparison(Comparator):
 
     def compare(self, a, b):
-        res = pycode_similar.detect(["\n".join(a), "\n".join(b)], diff_method=pycode_similar.UnifiedDiff)
+        res = pycode_similar.detect([a, b], diff_method=pycode_similar.UnifiedDiff)
         val = res[0][1][0].plagiarism_percent
         return val
 

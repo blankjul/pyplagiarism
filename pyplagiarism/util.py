@@ -4,7 +4,7 @@ from collections import namedtuple
 import numpy as np
 import plotly.graph_objects as go
 
-from pyplagiarism.vendor.diff2html.diff2html import main as diff2html
+from pyplagiarism.vendor.diff2html.diff2html import CodeDiff
 
 
 def parse(path_to_file, sourround_with_method=True):
@@ -15,12 +15,13 @@ def parse(path_to_file, sourround_with_method=True):
         code = ["   " + line for line in code]
         code.insert(0, "def run():")
 
-    return code
+    return "\n".join(code)
 
 
 def create_folder(p):
     if not os.path.exists(p):
         os.makedirs(p)
+
 
 def get_files(path_to_folder):
     ret = []
@@ -151,23 +152,26 @@ def visualize(out, M, labels, **kwargs):
         f.write(html)
 
 
-def diff(out, files):
-    P = [["" for _ in range(len(files))] for _ in range(len(files))]
+def diff(out, data):
+    labels = list(data.keys())
+    P = [["" for _ in range(len(labels))] for _ in range(len(labels))]
 
-    for i in range(len(files)):
-
-        for j in range(i + 1, len(files)):
-            file_a, file_b = files[i], files[j]
+    for i in range(len(labels)):
+        for j in range(i + 1, len(labels)):
+            file_a, file_b = data[labels[i]], data[labels[j]]
             Option = namedtuple("Options", "file1 file2 print_width show syntax_css verbose")
             options = Option(file1=file_a, file2=file_b, print_width=True, show=False, syntax_css="vs", verbose=False)
 
             name_a = os.path.basename(file_a)
             name_b = os.path.basename(file_b)
 
-            fname = f"{name_a}_vs_{name_b}".replace(".py", "") + ".html"
+            name = f"{name_a}_vs_{name_b}".replace(".py", "")
+            fname = name + ".html"
             path = os.path.join(out, fname)
 
-            diff2html(file_a, file_b, path, options)
+            codeDiff = CodeDiff(None, None, fromtxt=file_a, totxt=file_b, name=name)
+            codeDiff.format(options)
+            codeDiff.write(path)
 
             P[i][j], P[j][i] = fname, fname
 
@@ -199,14 +203,18 @@ def check_similarities(data, cmp, verbose=False):
 
 
 def check_groups(labels, M, verbose=True):
-    groups = find_groups(labels, M)
-    for i in range(len(groups)):
-        g = groups[i]
-        val = np.round(M[g][:, g].min(), 2)
-        s = ", ".join(labels[g])
 
-        if verbose:
-            print(f"Group {i + 1} ({val}): {s}")
+    groups = find_groups(labels, M)
+
+    if len(groups) == 0:
+        print("No plagiarism groups were found!")
+    else:
+        for i in range(len(groups)):
+            g = groups[i]
+            val = np.round(M[g][:, g].min(), 2)
+            s = ", ".join(labels[g])
+
+            if verbose:
+                print(f"Group {i + 1} ({val}): {s}")
 
     return groups
-

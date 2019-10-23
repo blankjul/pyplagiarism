@@ -6,44 +6,48 @@ from pyplagiarism.util import get_files, files_to_dict, sort_by_plag, diff, chec
     create_folder
 
 
-def plagiarism(*files,
+def plagiarism(data,
                output_folder=None,
                comparator=PycodeComparison(),
                find_groups=True,
                visualize_as_html=True,
                sort_by_plagiarism=True,
                diff_of_files=True,
+               verbose=True
                ):
     """
 
+    Function that does the job of plagiarism check.
+
     Parameters
     ----------
-    files : list
-        A list of files that should be checked for plagiarism.
 
-    output_folder : str
+    data
+        A dictionary where each entry is a source code file.
+
+    output_folder
         The output folder where the results should be stored
 
-    comparator : class
-        The comparator which returns compares two lists of strings (the lines of each file) and
-        returns the corresponding plagiarism value. New comparators can be written and provided.
-
-    find_groups : bool
+    find_groups
         Whether groups of similarities should be detected.
 
-    visualize_as_html : bool
+    visualize_as_html
         Whether the output should be written to file file that visualizes the plagiarism in a
         matrix.
 
-    sort_by_plagiarism : bool
+    sort_by_plagiarism
         Whether the files should be sorted by corresponding amount of plagiarism when visualized in html.
         Otherwise, the files are sorted by alphabet.
 
-    diff_of_files : bool
+    diff_of_files
         Whether for each pair of files a diff should be created.
 
-    Returns
-    -------
+    comparator
+        The comparator which returns compares two lists of strings (the lines of each file) and
+        returns the corresponding plagiarism value. New comparators can be written and provided.
+
+    verbose
+        Whether output should be printed or not.
 
     """
 
@@ -53,15 +57,8 @@ def plagiarism(*files,
     else:
         create_folder(output_folder)
 
-    # if just one entry we assume it is the folder
-    if len(files) == 1:
-        files = get_files(files[0])
-
-    # parse all the data into an array
-    data = files_to_dict(*files)
-
     # actually run the comparisons
-    labels, M = check_similarities(data, comparator)
+    labels, M = check_similarities(data, comparator, verbose=verbose)
 
     groups = None
     path_to_diff = None
@@ -72,7 +69,7 @@ def plagiarism(*files,
     if diff_of_files:
         diff_path = os.path.join(output_folder, "diff")
         create_folder(diff_path)
-        path_to_diff = diff(diff_path, files)
+        path_to_diff = diff(diff_path, data)
 
     if sort_by_plagiarism:
         I = sort_by_plag(M, groups=groups)
@@ -87,3 +84,10 @@ def plagiarism(*files,
         webbrowser.open('file://' + out_index)
 
 
+def plagiarism_from_files(*files):
+    # if just one entry we assume it is the folder
+    if len(files) == 1:
+        files = get_files(files[0])
+
+    # parse all the data into an array
+    return files_to_dict(*files)

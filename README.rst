@@ -27,7 +27,7 @@ In the future, we are planning to provide a command line tool in addition.
 .. code:: python
 
     
-    from pyplagiarism import plagiarism
+    from pyplagiarism.tool import plagiarism
 
     a = """
     def calculate():
